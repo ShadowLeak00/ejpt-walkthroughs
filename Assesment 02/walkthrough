@@ -1,0 +1,96 @@
+# Assessment 01 - Footprinting & Scanning CTF (INE)
+
+![ctf.png](attachment:3c981096-0c92-4fe6-9a3c-d8b5c4775846:ctf.png)
+
+Hello guys…. Today I have brought you a detailed walkthrough for the very first CTF in ejpt course.
+
+This CTF is based on Footprinting & Scanning phase. So, without further ado lets go team……
+
+Here are the hints we got from INE
+
+![image.png](attachment:70da4d29-1822-4ebf-a4d7-46d28206a9a0:image.png)
+
+## **Flag 1:** The server proudly announces its identity in every response. Look closely; you might find something unusual.
+
+- Go to the target web page http://target.ine.local
+- Right click on web page and click inspect
+- Go to network tab and refresh the web page
+- Now select the main .html page then you can see the response and request headers in the right side of the inspect tab
+- Yay…. unders server header you got the first answer
+
+![image.png](attachment:79d6a44d-5fc1-4c42-b71c-ff653361eec1:image.png)
+
+## **Flag 2:** The gatekeeper's instructions often reveal what should remain unseen. Don't forget to read between the lines.
+
+It was mentioned a gatekeeper who set the instruction to web page. yeah you are correct. It’s is the robot.txt page
+
+- go to http://target.ine.local/robots.txt
+
+![image.png](attachment:bd1e4b51-e51f-4fd5-b91d-9bb24f0128f6:image.png)
+
+- go to each disallow url
+- in secret-info you got only flag part
+- Now try every possibility which can be the correct path like
+    - /secret-info/data
+    - /photos/secret-info
+    - data/secret-info
+    - secret-info/flag.txt
+- You can get the right answer at “secret-info/flag.txt”
+
+![image.png](attachment:34bba27e-543f-442b-a23d-e17bf6c5a4b0:image.png)
+
+## **Flag 3:** Anonymous access sometimes leads to forgotten treasures. Connect and explore the directory; you might stumble upon something valuable.
+
+- To access web server you need to find hidden directory path or you need to access open port
+- So, lets enumerate directory links first
+    - ffuf -u http://target.ine.local -w /usr/share/wordlists/dirb/big.txt
+    - ffuf -u http://target.ine.local/FUZZ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -mc 200   got nothing
+- but I got nothing interested rather than robot.txt file
+- So, lets  nmap the target web server to see the open ports
+- Try to ping target to get IP
+
+![image.png](attachment:5a3c8d57-ed17-448f-b5bc-2a96e95e48d1:image.png)
+
+- Now nmap the target to version scan
+    - nmap -sS -sV -Pn -T4 -p- 192.253.140.3
+        - -sS ⇒ syn scan
+        - -sV ⇒ version scan
+        - -Pn ⇒ don’t try host discovery
+        - -T4 ⇒ speed up the scan
+        - -p- ⇒ scan all ports
+    
+    ![image.png](attachment:74e1eb61-7ff0-4886-b232-7aa5389c4a35:image.png)
+    
+- They have mentioned anonymous login. In most of scenarios ftp allows anonymous login if it misconfigures. so lets try this
+    - ftp 192.253.140.3
+    - logged successfully
+    
+    ![image.png](attachment:cdaa98a1-f382-401d-8f29-bc7d9eca3380:image.png)
+    
+    - try “ls” to list out the files and directories
+    - yay…you got flag.txt
+    - now we can download it to ourr pc and read it
+
+![image.png](attachment:1d419248-bfbc-4824-9131-2e36a3d0a4ed:image.png)
+
+![image.png](attachment:9db42b67-ee42-42df-ac3c-59cbb3d75430:image.png)
+
+## **Flag 4:**  A well-named database can be quite revealing. Peek at the configurations to discover the hidden treasure.
+
+- To find the vulnerability of the database lets run nmap script on the port 3306 and port 33060 which runs mysql service
+- oh nothing found
+- but, wait……… lets go to ftp server again. there was another juicy file there
+
+![image.png](attachment:5395ba8f-6f89-4741-82c6-c18d918aea78:image.png)
+
+- lets read that
+
+![image.png](attachment:b240aab3-7449-4acc-80fb-36ac46a88d13:image.png)
+
+- yay you got credentials to log into mysql database
+
+![image.png](attachment:422f41f8-b175-49e9-abe2-76c9e5ef7656:image.png)
+
+![image.png](attachment:4eb54f66-0155-49d4-bf62-9b675163df2c:image.png)
+
+- Yay……….You complete the lab
